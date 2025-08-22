@@ -4,9 +4,8 @@ import TodoForm from "./components/TodoForm";
 import TodoList from "./components/TodoList";
 
 export const BASE_URL =
-  import.meta.env.MODE === "development"
-    ? "http://localhost:4000/api"
-    : "https://testgoreact-production-2947.up.railway.app/api";
+  import.meta.env.MODE ===
+  "https://testgoreact-production-2947.up.railway.app/api";
 function App() {
   return (
     <Stack h="100vh">
