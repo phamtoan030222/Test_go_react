@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-
+	"os"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -13,25 +13,34 @@ import (
 func main() {
 	router := gin.Default()
 
+	// CORS config
 	router.Use(cors.New(cors.Config{
-    AllowOrigins:     []string{"https://test-go-react.vercel.app"},
-    AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
-    AllowHeaders:     []string{"Origin", "Content-Type"},
-    ExposeHeaders:    []string{"Content-Length"},
-    AllowCredentials: true,
-    MaxAge:           12 * time.Hour,
-}))
+		AllowOrigins: []string{
+			"http://localhost:5173",            // khi dev
+			"https://test-go-react.vercel.app", // frontend trên Vercel
+		},
+		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
-	router.POST("/api/tasks", handlers.CreateTaskHandler)
-	router.GET("/api/tasks", handlers.GetTaskHandler)
-	router.PATCH("/api/tasks/:id", handlers.UpdateTaskHandler)
-	router.DELETE("/api/tasks/:id", handlers.DeleteTaskHandler)
+	// API routes
+	api := router.Group("/api")
+	{
+		api.POST("/tasks", handlers.CreateTaskHandler)
+		api.GET("/tasks", handlers.GetTaskHandler)
+		api.PATCH("/tasks/:id", handlers.UpdateTaskHandler)
+		api.DELETE("/tasks/:id", handlers.DeleteTaskHandler)
+	}
 
-    router.NoRoute(func(c *gin.Context) {
-        c.File("./client/dist/index.html")
-    })
-    router.Static("/static", "./client/dist/static")
+	// Lấy PORT từ Railway
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "4000"
+	}
 
-	log.Println("Server running at http://localhost:4000")
-	router.Run(":4000")
+	log.Println("Server running on port", port)
+	router.Run(":" + port)
 }

@@ -3,9 +3,8 @@ import Navbar from "./components/Navbar";
 import TodoForm from "./components/TodoForm";
 import TodoList from "./components/TodoList";
 
-export const BASE_URL =
-  import.meta.env.MODE ===
-  "https://testgoreact-production-2947.up.railway.app/api";
+export const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 function App() {
   return (
     <Stack h="100vh">
