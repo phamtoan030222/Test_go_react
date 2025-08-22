@@ -47,7 +47,7 @@ func main() {
 	// Lấy PORT từ Railway
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "4000"
+		port = "8080"
 	}
 
 	log.Println("Server running on port", port)
