@@ -14,7 +14,7 @@ func main() {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowOrigins:     []string{"https://testgoreact-production-2947.up.railway.app"},
 		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -26,6 +26,11 @@ func main() {
 	router.GET("/api/tasks", handlers.GetTaskHandler)
 	router.PATCH("/api/tasks/:id", handlers.UpdateTaskHandler)
 	router.DELETE("/api/tasks/:id", handlers.DeleteTaskHandler)
+
+    router.NoRoute(func(c *gin.Context) {
+        c.File("./client/dist/index.html")
+    })
+    router.Static("/static", "./client/dist/static")
 
 	log.Println("Server running at http://localhost:4000")
 	router.Run(":4000")
