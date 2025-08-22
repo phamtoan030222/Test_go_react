@@ -12,37 +12,77 @@ import type { Todo } from "./TodoList";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BASE_URL } from "../App";
 
-const TodoItem = ({ todo }: { todo: Todo }) => {
+const TodoItem = ({ task }: { task: Todo }) => {
   const queryClient = useQueryClient();
 
-  const { mutate: updateTodo, isPending: isUpdating } = useMutation({
-    mutationKey: ["updateTodo"],
+  // ---- Update task (optimistic) ----
+  const { mutate: updateTask, isPending: isUpdating } = useMutation({
     mutationFn: async () => {
-      if (todo.completed) return alert("Todo is already completed");
-      const res = await fetch(BASE_URL + `/todos/${todo._id}`, {
+      const res = await fetch(`${BASE_URL}/tasks/${task.id}`, {
         method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: !task.completed }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong");
-      return data;
+      if (!res.ok) throw new Error("Failed to update");
+      return res.json();
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["todos"] });
+
+      const prevTasks = queryClient.getQueryData<Todo[]>(["tasks"]);
+
+      queryClient.setQueryData<Todo[]>(["tasks"], (old) =>
+        old
+          ? old.map((t) =>
+              t.id === task.id ? { ...t, completed: !t.completed } : t
+            )
+          : []
+      );
+
+      return { prevTasks };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.prevTasks) {
+        queryClient.setQueryData(["todos"], context.prevTasks);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["todos"] });
+    },
   });
 
-  const { mutate: deleteTodo, isPending: isDeleting } = useMutation({
-    mutationKey: ["deleteTodo"],
+  // ---- Delete task (optimistic) ----
+  const { mutate: deleteTask, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
-      const res = await fetch(BASE_URL + `/todos/${todo._id}`, {
+      const res = await fetch(`${BASE_URL}/tasks/${task.id}`, {
         method: "DELETE",
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong");
-      return data;
+      if (!res.ok) throw new Error("Failed to delete");
+      return res.json();
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["todos"] });
+
+      const prevTasks = queryClient.getQueryData<Todo[]>(["tasks"]);
+
+      queryClient.setQueryData<Todo[]>(
+        ["tasks"],
+        (old) => old?.filter((t) => t.id !== task.id) || []
+      );
+
+      return { prevTasks };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.prevTasks) {
+        queryClient.setQueryData(["todos"], context.prevTasks);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["todos"] });
+    },
   });
 
-  // Dùng màu theo theme (light/dark mode)
+  // ---- Colors ----
   const completedColor = useColorModeValue("green.600", "green.200");
   const inProgressColor = useColorModeValue("yellow.600", "yellow.200");
 
@@ -57,14 +97,24 @@ const TodoItem = ({ todo }: { todo: Todo }) => {
         borderRadius="lg"
         justifyContent="space-between"
       >
-        <Text
-          color={todo.completed ? completedColor : inProgressColor}
-          textDecoration={todo.completed ? "line-through" : "none"}
-        >
-          {todo.body}
-        </Text>
+        <Box>
+          <Text
+            fontWeight="bold"
+            color={task.completed ? completedColor : inProgressColor}
+            textDecoration={task.completed ? "line-through" : "none"}
+          >
+            {task.title}
+          </Text>
+          <Text
+            fontSize="sm"
+            color={useColorModeValue("gray.600", "gray.400")}
+            textDecoration={task.completed ? "line-through" : "none"}
+          >
+            {task.description}
+          </Text>
+        </Box>
 
-        {todo.completed ? (
+        {task.completed ? (
           <Badge ml={1} colorScheme="green">
             Done
           </Badge>
@@ -76,10 +126,10 @@ const TodoItem = ({ todo }: { todo: Todo }) => {
       </Flex>
 
       <Flex gap={2} alignItems="center">
-        <Box color="green.400" cursor="pointer" onClick={() => updateTodo()}>
+        <Box color="green.400" cursor="pointer" onClick={() => updateTask()}>
           {!isUpdating ? <FaCheckCircle size={20} /> : <Spinner size="sm" />}
         </Box>
-        <Box color="red.400" cursor="pointer" onClick={() => deleteTodo()}>
+        <Box color="red.400" cursor="pointer" onClick={() => deleteTask()}>
           {!isDeleting ? <MdDelete size={25} /> : <Spinner size="sm" />}
         </Box>
       </Flex>
