@@ -14,13 +14,13 @@ func main() {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://test-go-react.vercel.app"},
-		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
+    AllowOrigins:     []string{"https://test-go-react.vercel.app"},
+    AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+    AllowHeaders:     []string{"Origin", "Content-Type"},
+    ExposeHeaders:    []string{"Content-Length"},
+    AllowCredentials: true,
+    MaxAge:           12 * time.Hour,
+}))
 
 	router.POST("/api/tasks", handlers.CreateTaskHandler)
 	router.GET("/api/tasks", handlers.GetTaskHandler)
