@@ -19,6 +19,6 @@ COPY --from=builder /app/server /app/server
 
 ENV GIN_MODE=release
 ENV PORT=8080
-EXPOSE 8080
+EXPOSE $PORT
 
 CMD ["/app/server"]
