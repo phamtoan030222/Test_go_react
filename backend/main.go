@@ -18,24 +18,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Lấy domain frontend từ biến môi trường (nếu có)
+	// Lấy domain client từ biến môi trường (nếu cần cho CORS)
 	frontendURL := os.Getenv("FRONTEND_URL")
 	if frontendURL == "" {
-		frontendURL = "http://localhost:8081" // default cho dev local
+		frontendURL = "http://localhost:5173" // dev local Vite
 	}
 
 	// CORS config
 	router.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
 			frontendURL,
-			"https://testgoreact-production-2947.up.railway.app", // fallback cho Vercel
 		},
-		AllowMethods: []string{
-			"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS",
-		},
-		AllowHeaders: []string{
-			"Origin", "Content-Type", "Accept", "Authorization",
-		},
+		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders: []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
@@ -50,10 +45,17 @@ func main() {
 		api.DELETE("/tasks/:id", handlers.DeleteTaskHandler)
 	}
 
-	// Railway sẽ truyền PORT qua biến môi trường
+	// Serve client tĩnh (Vite build)
+	// Giả sử build client vào folder ./client/dist
+	router.Static("/", "./client/dist")
+	router.NoRoute(func(c *gin.Context) {
+		c.File("./client/dist/index.html")
+	})
+
+	// Lấy PORT từ Railway env
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "8080" // fallback local
 	}
 
 	log.Println("✅ Server running on port", port)
