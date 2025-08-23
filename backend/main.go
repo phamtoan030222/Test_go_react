@@ -42,22 +42,8 @@ func main() {
 		log.Printf("✅ CORS configured for origins: %v", origins)
 	}
 
+	// CHỈ SỬ DỤNG middleware CORS này, không thêm middleware thủ công
 	router.Use(cors.New(config))
-
-	// Middleware để log CORS headers (debug)
-	router.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		if len(config.AllowOrigins) > 0 {
-			origin := c.Request.Header.Get("Origin")
-			for _, allowedOrigin := range config.AllowOrigins {
-				if origin == allowedOrigin {
-					c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-					break
-				}
-			}
-		}
-		c.Next()
-	})
 
 	// API routes
 	api := router.Group("/api")
@@ -88,11 +74,6 @@ func main() {
 			"endpoints": []string{"/api", "/api/tasks", "/health"},
 			"timestamp": time.Now().Format(time.RFC3339),
 		})
-	})
-
-	// Handle OPTIONS requests for CORS preflight
-	router.OPTIONS("/*path", func(c *gin.Context) {
-		c.Status(http.StatusOK)
 	})
 
 	port := os.Getenv("PORT")
