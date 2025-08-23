@@ -11,23 +11,20 @@ import (
 )
 
 func main() {
-	// Khởi tạo router Gin
 	router := gin.Default()
 
-	// Fix cảnh báo proxy (không trust proxy nào)
 	if err := router.SetTrustedProxies(nil); err != nil {
 		log.Fatal(err)
 	}
 
-	// Lấy domain frontend từ biến môi trường (production)
+	// FRONTEND_URL từ env Railway
 	frontendURL := os.Getenv("FRONTEND_URL")
 	if frontendURL == "" {
-		frontendURL = "https://test-go-react.vercel.app" // fallback dev local
+		log.Fatal("❌ FRONTEND_URL environment variable not set!")
 	}
 
-	// CORS config
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{frontendURL}, // frontend cloud URL
+		AllowOrigins:     []string{frontendURL}, // domain frontend Vercel
 		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -35,7 +32,6 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	// API routes
 	api := router.Group("/api")
 	{
 		api.POST("/tasks", handlers.CreateTaskHandler)
@@ -44,10 +40,9 @@ func main() {
 		api.DELETE("/tasks/:id", handlers.DeleteTaskHandler)
 	}
 
-	// Lấy port từ Railway env
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080" // fallback local
+		port = "8080"
 	}
 
 	log.Println("✅ Backend server running on port", port)
@@ -55,3 +50,4 @@ func main() {
 		log.Fatal("❌ Failed to start server: ", err)
 	}
 }
+
