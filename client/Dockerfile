@@ -11,6 +11,7 @@ RUN npm run build
 
 FROM nginx:1.27-alpine
 
+# copy file nginx.conf từ thư mục client vào container
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 COPY --from=builder /app/dist /usr/share/nginx/html
