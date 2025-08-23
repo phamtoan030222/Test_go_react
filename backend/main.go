@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -17,20 +18,31 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// FRONTEND_URL từ env Railway
-	frontendURL := os.Getenv("FRONTEND_URL")
-	if frontendURL == "" {
-		log.Fatal("❌ FRONTEND_URL environment variable not set!")
-	}
-
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{frontendURL}, // domain frontend Vercel
+	// Cấu hình CORS linh hoạt
+	config := cors.Config{
 		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
-	}))
+	}
+
+	// FRONTEND_URL từ env Railway - hỗ trợ nhiều origin
+	frontendURL := os.Getenv("FRONTEND_URL")
+	if frontendURL == "" {
+		log.Println("⚠️  FRONTEND_URL environment variable not set, allowing all origins")
+		config.AllowAllOrigins = true
+	} else {
+		// Hỗ trợ nhiều URL phân cách bằng dấu phẩy
+		origins := strings.Split(frontendURL, ",")
+		for i, origin := range origins {
+			origins[i] = strings.TrimSpace(origin)
+		}
+		config.AllowOrigins = origins
+		log.Printf("✅ CORS configured for origins: %v", origins)
+	}
+
+	router.Use(cors.New(config))
 
 	api := router.Group("/api")
 	{
@@ -39,6 +51,14 @@ func main() {
 		api.PATCH("/tasks/:id", handlers.UpdateTaskHandler)
 		api.DELETE("/tasks/:id", handlers.DeleteTaskHandler)
 	}
+
+	// Route health check cho Railway
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status": "OK",
+			"time":   time.Now().Format(time.RFC3339),
+		})
+	})
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -50,4 +70,3 @@ func main() {
 		log.Fatal("❌ Failed to start server: ", err)
 	}
 }
-
