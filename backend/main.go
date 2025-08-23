@@ -22,7 +22,7 @@ func main() {
 	// Lấy domain frontend từ biến môi trường (production)
 	frontendURL := os.Getenv("FRONTEND_URL")
 	if frontendURL == "" {
-		frontendURL = "http://localhost:5173" // fallback dev local
+		frontendURL = "https://test-go-react.vercel.app" // fallback dev local
 	}
 
 	// CORS config
