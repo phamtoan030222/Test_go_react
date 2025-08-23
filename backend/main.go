@@ -28,7 +28,7 @@ func main() {
 	router.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
 			frontendURL,
-			"https://test-go-react.vercel.app", // fallback cho Vercel
+			"https://testgoreact-production-2947.up.railway.app", // fallback cho Vercel
 		},
 		AllowMethods: []string{
 			"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS",
