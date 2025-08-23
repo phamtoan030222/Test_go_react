@@ -6,7 +6,7 @@ import TodoList from "./components/TodoList";
 export const BASE_URL =
   import.meta.env.MODE === "development"
     ? "http://localhost:8080/api" // local
-    : "https://testgoreact-production-2947.up.railway.app/api"; // backend deploy
+    : "https://testgoreact-production-1b84.up.railway.app/api"; // backend deploy
 
 function App() {
   return (
