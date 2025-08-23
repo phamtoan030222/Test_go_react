@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  api:
+    build: ./backend
+    container_name: api
+    environment:
+      - PORT=8080
+      - CORS_ORIGINS=http://localhost:8081
+    ports:
+      - "8080:8080"
+
+  web:
+    build:
+      context: ./client
+      args:
+        # web gọi thẳng api qua localhost:8080 khi chạy local
+        - VITE_API_URL=http://localhost:8080
+    container_name: web
+    ports:
+      - "8081:80"
+    depends_on:
+      - api

@@ -18,11 +18,17 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Lấy domain frontend từ biến môi trường (nếu có)
+	frontendURL := os.Getenv("FRONTEND_URL")
+	if frontendURL == "" {
+		frontendURL = "http://localhost:8081" // default cho dev local
+	}
+
 	// CORS config
 	router.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
-			"http://localhost:5173",            // cho dev local
-			"https://test-go-react.vercel.app", // cho frontend trên Vercel
+			frontendURL,
+			"https://test-go-react.vercel.app", // fallback cho Vercel
 		},
 		AllowMethods: []string{
 			"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS",
@@ -44,12 +50,14 @@ func main() {
 		api.DELETE("/tasks/:id", handlers.DeleteTaskHandler)
 	}
 
-	// Lấy PORT từ Railway
+	// Railway sẽ truyền PORT qua biến môi trường
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	log.Println("Server running on port", port)
-	router.Run(":" + port)
+	log.Println("✅ Server running on port", port)
+	if err := router.Run(":" + port); err != nil {
+		log.Fatal("❌ Failed to start server: ", err)
+	}
 }
