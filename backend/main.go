@@ -13,25 +13,27 @@ func main() {
 	router := gin.Default()
 
 	// CORS middleware đơn giản nhưng hiệu quả
-	router.Use(func(c *gin.Context) {
-		origin := c.Request.Header.Get("Origin")
-		
-		// Chỉ allow domain của bạn
-		if origin == "https://test-go-react.vercel.app" {
-			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-			c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
-			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		}
-		
-		// Handle preflight requests
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-		
-		c.Next()
-	})
+	allowedOrigins := map[string]bool{
+    "https://test-go-react.vercel.app": true,
+    "https://test-go-react-git-master-phamtoan-s-projects.vercel.app": true,
+    "http://localhost:5173": true, // cho dev local
+    }
+
+    router.Use(func(c *gin.Context) {
+        origin := c.Request.Header.Get("Origin")
+        if allowedOrigins[origin] {
+            c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+            c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+            c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+            c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+        }
+
+        if c.Request.Method == "OPTIONS" {
+            c.AbortWithStatus(204)
+            return
+        }
+        c.Next()
+    })
 
 	// API routes
 	api := router.Group("/api")
