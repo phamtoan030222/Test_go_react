@@ -7,7 +7,7 @@ export const BASE_URL =
   import.meta.env.VITE_API_URL ||
   (import.meta.env.MODE === "development"
     ? "http://localhost:8080/api"
-    : "https://testgoreact-production-1b84.up.railway.app/api");
+    : "https://test-demo-69mf.onrender.com/api");
 
 function App() {
   return (
