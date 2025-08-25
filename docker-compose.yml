@@ -14,7 +14,7 @@ services:
       context: ./client
       args:
         # web gọi thẳng api qua localhost:8080 khi chạy local
-        - VITE_API_URL=http://localhost:8080
+        - VITE_API_URL=http://localhost:8080/api
     container_name: web
     ports:
       - "8081:80"

@@ -16,7 +16,7 @@ func main() {
 	allowedOrigins := map[string]bool{
     "https://test-go-react.vercel.app": true,
     "https://test-go-react-git-master-phamtoan-s-projects.vercel.app": true,
-    "http://localhost:5173": true, // cho dev local
+    "http://localhost:8081": true, // cho dev local
     }
 
     router.Use(func(c *gin.Context) {
@@ -68,11 +68,9 @@ func main() {
 	if port == "" {
 		port = "8080" // Default for local
 	}
-
-	log.Printf("🚀 Server starting on port %s", port)
 	
 	// Khởi động server
 	if err := router.Run(":" + port); err != nil {
-		log.Fatalf("❌ Failed to start server: %v", err)
+		log.Fatalf("Failed to start server: %v", err)
 	}
 }
